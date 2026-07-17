@@ -117,6 +117,7 @@ class GeminiProvider:
                 "\n\nPrevious output was invalid. "
                 "Respond with ONLY the JSON object. No markdown."
             )
+        
         response = model.generate_content(prompt)
         text = getattr(response, "text", None)
         if not text:

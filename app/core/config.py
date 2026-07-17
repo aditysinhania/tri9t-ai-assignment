@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     # Gemini LLM
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_model: str = "gemini-flash-latest"
     llm_max_retries: int = 2
 
 
