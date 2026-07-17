@@ -14,6 +14,9 @@ class GenerationStore(Protocol):
     def insert(self, document: dict[str, Any]) -> str:
         """Persist a generation payload and return its store id."""
 
+    def get(self, document_id: str) -> dict[str, Any] | None:
+        """Fetch a stored generation payload by id."""
+
 
 class MongoGenerationStore:
     def __init__(self, collection: Collection):
@@ -22,6 +25,19 @@ class MongoGenerationStore:
     def insert(self, document: dict[str, Any]) -> str:
         result = self._collection.insert_one(document)
         return str(result.inserted_id)
+
+    def get(self, document_id: str) -> dict[str, Any] | None:
+        from bson import ObjectId
+
+        try:
+            oid = ObjectId(document_id)
+        except Exception:
+            return None
+        doc = self._collection.find_one({"_id": oid})
+        if doc is None:
+            return None
+        doc["_id"] = str(doc["_id"])
+        return doc
 
 
 class InMemoryGenerationStore:
@@ -38,6 +54,12 @@ class InMemoryGenerationStore:
         stored["_id"] = doc_id
         self.documents[doc_id] = stored
         return doc_id
+
+    def get(self, document_id: str) -> dict[str, Any] | None:
+        doc = self.documents.get(document_id)
+        if doc is None:
+            return None
+        return dict(doc)
 
 
 @lru_cache
