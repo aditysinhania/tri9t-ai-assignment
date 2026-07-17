@@ -17,7 +17,14 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class Base(DeclarativeBase):
-    """Base class for SQLAlchemy models (models added in a later phase)."""
+    """Base class for SQLAlchemy models."""
+
+
+def init_db() -> None:
+    """Create all tables. Import models so metadata is registered."""
+    from app import models  # noqa: F401
+
+    Base.metadata.create_all(bind=engine)
 
 
 def get_db() -> Generator[Session, None, None]:
