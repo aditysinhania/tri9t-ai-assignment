@@ -108,6 +108,9 @@ class Selection(Base):
         cascade="all, delete-orphan",
         order_by="SelectionNode.position",
     )
+    generations: Mapped[list[QAGeneration]] = relationship(
+        back_populates="selection", cascade="all, delete-orphan"
+    )
 
 
 class SelectionNode(Base):
@@ -133,3 +136,22 @@ class SelectionNode(Base):
 
     selection: Mapped[Selection] = relationship(back_populates="node_links")
     node: Mapped[Node] = relationship(back_populates="selection_links")
+
+
+class QAGeneration(Base):
+    """SQLite metadata for an LLM generation run; full payload lives in MongoDB."""
+
+    __tablename__ = "qa_generations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    selection_id: Mapped[int] = mapped_column(
+        ForeignKey("selections.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    mongo_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_snapshot_json: Mapped[str] = mapped_column(Text, nullable=False)
+    test_case_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utc_now, nullable=False
+    )
+
+    selection: Mapped[Selection] = relationship(back_populates="generations")

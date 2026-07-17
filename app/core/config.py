@@ -17,9 +17,14 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///./ct200.db"
 
-    # Prepared for Phase 7 (LLM storage). Not used in Phase 1.
+    # MongoDB — used for LLM generation payloads (Phase 7+)
     mongo_uri: str = "mongodb://localhost:27017"
     mongo_db_name: str = "ct200_generations"
+
+    # Gemini LLM
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash"
+    llm_max_retries: int = 2
 
 
 @lru_cache
