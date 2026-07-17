@@ -81,10 +81,13 @@ class Node(Base):
     children: Mapped[list[Node]] = relationship(
         back_populates="parent", cascade="all, delete-orphan"
     )
+    selection_links: Mapped[list[SelectionNode]] = relationship(
+        back_populates="node"
+    )
 
 
 class Selection(Base):
-    """Named, version-pinned selection. Node membership is added in a later phase."""
+    """Named selection pinned to a specific document version."""
 
     __tablename__ = "selections"
 
@@ -100,3 +103,33 @@ class Selection(Base):
     )
 
     version: Mapped[DocumentVersion] = relationship(back_populates="selections")
+    node_links: Mapped[list[SelectionNode]] = relationship(
+        back_populates="selection",
+        cascade="all, delete-orphan",
+        order_by="SelectionNode.position",
+    )
+
+
+class SelectionNode(Base):
+    """Ordered membership of a version-specific node inside a selection."""
+
+    __tablename__ = "selection_nodes"
+    __table_args__ = (
+        UniqueConstraint(
+            "selection_id",
+            "node_id",
+            name="uq_selection_nodes_selection_node",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    selection_id: Mapped[int] = mapped_column(
+        ForeignKey("selections.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    node_id: Mapped[int] = mapped_column(
+        ForeignKey("nodes.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    selection: Mapped[Selection] = relationship(back_populates="node_links")
+    node: Mapped[Node] = relationship(back_populates="selection_links")
